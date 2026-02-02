@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
+import { BrainrotStats } from '@/components/BrainrotStats';
 import { useApp } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Shield, Lock } from 'lucide-react';
@@ -217,11 +218,11 @@ export default function OnboardingScreen() {
         {step === 3 && (
           <StepContainer>
             <StepTitle>Which apps usually distract you?</StepTitle>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4">
               Select all that apply (optional)
             </p>
             
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mb-4">
               {DISTRACTION_APPS.map(app => (
                 <ChipButton
                   key={app}
@@ -237,8 +238,11 @@ export default function OnboardingScreen() {
               value={otherDistraction}
               onChange={(e) => setOtherDistraction(e.target.value)}
               placeholder="Other..."
-              className="text-lg h-14 rounded-xl"
+              className="text-lg h-14 rounded-xl mb-6"
             />
+
+            {/* Personalized brainrot stats with motivational quote */}
+            <BrainrotStats selectedApps={distractionApps} showQuote={true} />
           </StepContainer>
         )}
 
