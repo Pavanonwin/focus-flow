@@ -33,9 +33,10 @@ export default function FocusScreen() {
   const navigate = useNavigate();
   const { currentSession, updateSessionJournal, emergencyExit } = useApp();
   const [journalText, setJournalText] = useState(currentSession?.journal_during || '');
-  const [showWhy, setShowWhy] = useState(false);
+  const [showWhyExpanded, setShowWhyExpanded] = useState(true); // Start expanded
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [currentPrompt, setCurrentPrompt] = useState(JOURNAL_PROMPTS.initial);
+  const [whyIsHighlighted, setWhyIsHighlighted] = useState(true); // For initial glow effect
   const { sendNotification, requestPermission, permission } = useNotifications();
 
   const handleComplete = useCallback(() => {
@@ -59,6 +60,12 @@ export default function FocusScreen() {
     if (permission === 'default') {
       requestPermission();
     }
+    
+    // Remove highlight glow after 5 seconds, but keep expanded
+    const timer = setTimeout(() => {
+      setWhyIsHighlighted(false);
+    }, 5000);
+    return () => clearTimeout(timer);
   }, [start, permission, requestPermission]);
 
   // Update journal prompt at 50%
@@ -167,24 +174,38 @@ export default function FocusScreen() {
           {currentSession.focus_task}
         </h1>
 
-        {/* Expandable Why */}
-        <button 
-          onClick={() => setShowWhy(!showWhy)}
-          className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <span className="text-sm">Why this matters</span>
-          {showWhy ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
+        {/* Highlighted "Why it matters" - Always visible initially */}
+        <div 
+          className={cn(
+            "mt-4 p-4 rounded-xl border-2 transition-all duration-500",
+            whyIsHighlighted
+              ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 animate-pulse-glow"
+              : "border-border bg-card"
           )}
-        </button>
-        
-        {showWhy && (
-          <p className="text-muted-foreground text-center mt-2 px-4 animate-fade-in">
-            "{currentSession.focus_why}"
-          </p>
-        )}
+        >
+          <button 
+            onClick={() => setShowWhyExpanded(!showWhyExpanded)}
+            className="w-full flex items-center justify-between text-left"
+          >
+            <span className={cn(
+              "text-sm font-medium transition-colors",
+              whyIsHighlighted || showWhyExpanded ? "text-primary" : "text-muted-foreground"
+            )}>
+              💡 Why this matters to you
+            </span>
+            {showWhyExpanded ? (
+              <ChevronUp className="w-4 h-4 text-primary" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            )}
+          </button>
+          
+          {showWhyExpanded && (
+            <p className="text-foreground mt-2 font-medium animate-fade-in">
+              "{currentSession.focus_why}"
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Divider */}
