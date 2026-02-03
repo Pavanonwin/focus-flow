@@ -6,11 +6,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { ProgressIndicator } from '@/components/ProgressIndicator';
 import { BrainrotStats } from '@/components/BrainrotStats';
+import DNDGuide from '@/components/DNDGuide';
 import { useApp } from '@/contexts/AppContext';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, ArrowRight, Shield, Lock } from 'lucide-react';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 const TASK_SUGGESTIONS = ['Study', 'Write', 'Work task', 'Read', 'Plan'];
 const WHY_TEMPLATES = [
@@ -46,7 +47,8 @@ export default function OnboardingScreen() {
       case 2: return duration >= 5 && duration <= 180;
       case 3: return true; // Optional selection
       case 4: return true; // Mode selection always valid
-      case 5: return true; // Final step
+      case 5: return true; // Privacy step
+      case 6: return true; // DND step - handled by component
       default: return false;
     }
   };
@@ -75,6 +77,9 @@ export default function OnboardingScreen() {
         break;
       case 5:
         updateOnboardingData({ allow_notifications: allowNotifications });
+        break;
+      case 6:
+        // DND step complete - start session
         completeOnboarding();
         startSession();
         navigate('/focus');
@@ -82,6 +87,18 @@ export default function OnboardingScreen() {
     }
     
     setStep(s => s + 1);
+  };
+
+  const handleDNDComplete = () => {
+    completeOnboarding();
+    startSession();
+    navigate('/focus');
+  };
+
+  const handleDNDSkip = () => {
+    completeOnboarding();
+    startSession();
+    navigate('/focus');
   };
 
   const handleBack = () => {
@@ -306,23 +323,29 @@ export default function OnboardingScreen() {
             </div>
           </StepContainer>
         )}
+
+        {step === 6 && (
+          <DNDGuide onComplete={handleDNDComplete} onSkip={handleDNDSkip} />
+        )}
       </div>
 
-      {/* Footer */}
-      <div className="pt-6">
-        <Button
-          size="lg"
-          className="w-full text-lg h-14 rounded-xl"
-          onClick={handleNext}
-          disabled={!canProceed()}
-        >
-          {step === 5 ? (
-            <>Start Focus Session</>
-          ) : (
-            <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
-          )}
-        </Button>
-      </div>
+      {/* Footer - Hide for DND step as it has its own buttons */}
+      {step !== 6 && (
+        <div className="pt-6">
+          <Button
+            size="lg"
+            className="w-full text-lg h-14 rounded-xl"
+            onClick={handleNext}
+            disabled={!canProceed()}
+          >
+            {step === 5 ? (
+              <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+            ) : (
+              <>Continue <ArrowRight className="ml-2 w-5 h-5" /></>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
